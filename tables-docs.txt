@@ -1,0 +1,46 @@
+1. Employees
+   - `EmployeeID`: Primary Key
+   - `FirstName`
+   - `LastName`
+   - `Email`
+   - `PositionID`: Foreign Key (Positions Table)
+   - `DepartmentID`: Foreign Key (Departments Table)
+   - `HireDate`
+   - `Salary`
+   - `Status`: (Active, On Leave, Resigned, etc.)
+
+2. Departments
+   - `DepartmentID`: Primary Key
+   - `DepartmentName`
+   - `ManagerID`: Foreign Key (Employees Table)
+
+3. Positions
+   - `PositionID`: Primary Key
+   - `PositionName`
+   - `Responsibilities`: (Text Field)
+   - `MinSalary`
+   - `MaxSalary`
+
+4. Attendance
+   - `AttendanceID`: Primary Key
+   - `EmployeeID`: Foreign Key (Employees Table)
+   - `Date`
+   - `TimeIn`
+   - `TimeOut`
+   - `Status`: (Present, Absent, Late, etc.)
+
+5. LeaveRequests
+   - `LeaveID`: Primary Key
+   - `EmployeeID`: Foreign Key (Employees Table)
+   - `StartDate`
+   - `EndDate`
+   - `Reason`
+   - `Status`: (Pending, Approved, Denied)
+
+6. PerformanceReviews
+   - `ReviewID`: Primary Key
+   - `EmployeeID`: Foreign Key (Employees Table)
+   - `Date`
+   - `ReviewerID`: (Can be a Manager or Supervisor, Foreign Key - Employees Table)
+   - `PerformanceScore`
+   - `Comments`: (Text Field).
