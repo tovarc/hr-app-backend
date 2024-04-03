@@ -28,11 +28,9 @@ async def get_all_departments(db: Session = Depends(get_db)):
     response_model=schemas.Departments,
 )
 async def create_department(
-    department: schemas.Departments, db: Session = Depends(get_db)
+    department: schemas.CreateDepartment, db: Session = Depends(get_db)
 ):
-    new_department = models.Departments(
-        name=department.name,
-    )
+    new_department = models.Departments(**department.model_dump())
     db.add(new_department)
     db.commit()
     db.refresh(new_department)

@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, relationship
 
 from api.database import database
 from api.models import models
@@ -20,10 +20,13 @@ def get_employee(id: int, db: Session):
 @router.get(
     "",
     status_code=status.HTTP_200_OK,
-    response_model=List[schemas.Employees],
+    response_model=List[schemas.EmployeesResponse],
 )
 async def get_all_employees(db: Session = Depends(get_db)):
-    employees = db.query(models.Employees).all()
+    employees = (
+        db.query(models.Employees).options(joinedload(models.Employees.position)).all()
+    )
+
     return employees
 
 

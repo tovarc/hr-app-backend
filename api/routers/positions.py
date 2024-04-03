@@ -27,7 +27,9 @@ async def get_all_positions(db: Session = Depends(get_db)):
     status_code=status.HTTP_201_CREATED,
     response_model=schemas.Positions,
 )
-async def create_position(position: schemas.Positions, db: Session = Depends(get_db)):
+async def create_position(
+    position: schemas.CreatePosition, db: Session = Depends(get_db)
+):
     new_position = models.Positions(
         name=position.name,
         responsibilities=position.responsibilities,

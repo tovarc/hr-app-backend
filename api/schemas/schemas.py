@@ -26,9 +26,30 @@ class Departments(BaseModel):
     name: str
 
 
+class CreateDepartment(BaseModel):
+    name: str
+
+
 class Positions(BaseModel):
     id: int
     name: str
     responsibilities: str
     min_salary: float
     max_salary: float
+
+
+class CreatePosition(BaseModel):
+    name: str
+    responsibilities: str
+    min_salary: float
+    max_salary: float
+
+
+class EmployeesResponse(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    email: str
+    position: Positions
+    department: Departments
+    hire_date: datetime
