@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, time
 from pydantic import BaseModel
 
 
@@ -53,3 +53,71 @@ class EmployeesResponse(BaseModel):
     position: Positions
     department: Departments
     hire_date: datetime
+
+
+class CreateLeaveRequest(BaseModel):
+    employee_id: int
+    start_date: datetime
+    end_date: datetime
+    reason: str
+    status_id: int
+
+
+class UpdateLeaveRequest(BaseModel):
+    id: int
+    start_date: datetime
+    end_date: datetime
+    reason: str
+    employee_id: int
+    status_id: int
+
+
+class LeaveRequestsStatus(BaseModel):
+    id: int
+    name: str
+
+
+class CreateLeaveRequestStatus(BaseModel):
+    name: str
+
+
+class UpdateLeaveRequestStatus(BaseModel):
+    id: int
+    name: str
+
+
+class LeaveRequestsResponse(BaseModel):
+    id: int
+    employee_id: int
+    start_date: datetime
+    end_date: datetime
+    reason: str
+    status: LeaveRequestsStatus
+    employee: Employees
+
+
+class AttendanceStatus(BaseModel):
+    id: int
+    name: str
+
+
+class CreateAttendanceStatus(BaseModel):
+    name: str
+
+
+class CreateAttendance(BaseModel):
+    employee_id: int
+    date: datetime
+    time_in: time
+    time_out: time
+    status_id: int
+
+
+class AttendanceResponse(BaseModel):
+    id: int
+    employee: Employees
+    date: datetime
+    time_in: datetime
+    time_out: datetime
+    status: AttendanceStatus
+    employee: Employees

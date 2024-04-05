@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Time
 from sqlalchemy.orm import relationship
 
 from api.database.database import Base
@@ -27,6 +27,8 @@ class Employees(Base):
 
     position = relationship("Positions", back_populates="employees")
     department = relationship("Departments", back_populates="employees")
+    attendance = relationship("Attendance", back_populates="employee")
+    leave_request = relationship("LeaveRequests", back_populates="employee")
 
 
 class Departments(Base):
@@ -48,3 +50,49 @@ class Positions(Base):
     max_salary = Column(Float, nullable=False)
 
     employees = relationship("Employees", back_populates="position")
+
+
+class LeaveRequests(Base):
+    __tablename__ = "leave_requests"
+
+    id = Column(Integer, primary_key=True)
+    employee_id = Column(Integer, ForeignKey("employees.id"))
+    start_date = Column(DateTime, nullable=False)
+    end_date = Column(DateTime, nullable=False)
+    reason = Column(String, nullable=False, default="No reason")
+    status_id = Column(Integer, ForeignKey("leave_requests_status.id"))
+
+    status = relationship("LeaveRequestsStatus", back_populates="leave_request")
+    employee = relationship("Employees", back_populates="leave_request")
+
+
+class LeaveRequestsStatus(Base):
+    __tablename__ = "leave_requests_status"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True, nullable=False)
+
+    leave_request = relationship("LeaveRequests", back_populates="status")
+
+
+class Attendance(Base):
+    __tablename__ = "attendance"
+
+    id = Column(Integer, primary_key=True)
+    employee_id = Column(Integer, ForeignKey("employees.id"))
+    date = Column(DateTime, nullable=False)
+    time_in = Column(Time, nullable=False)
+    time_out = Column(Time, nullable=False)
+    status_id = Column(Integer, ForeignKey("attendance_status.id"))
+
+    employee = relationship("Employees", back_populates="attendance")
+    status = relationship("AttendanceStatus", back_populates="attendance")
+
+
+class AttendanceStatus(Base):
+    __tablename__ = "attendance_status"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True, nullable=False)
+
+    attendance = relationship("Attendance", back_populates="status")

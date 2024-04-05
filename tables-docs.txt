@@ -1,3 +1,4 @@
+DONE
 1. Employees
    - `EmployeeID`: Primary Key
    - `FirstName`
@@ -9,11 +10,15 @@
    - `Salary`
    - `Status`: (Active, On Leave, Resigned, etc.)
 
+
+DONE
 2. Departments
    - `DepartmentID`: Primary Key
    - `DepartmentName`
    - `ManagerID`: Foreign Key (Employees Table)
 
+
+DONE
 3. Positions
    - `PositionID`: Primary Key
    - `PositionName`
@@ -29,6 +34,7 @@
    - `TimeOut`
    - `Status`: (Present, Absent, Late, etc.)
 
+DONE
 5. LeaveRequests
    - `LeaveID`: Primary Key
    - `EmployeeID`: Foreign Key (Employees Table)

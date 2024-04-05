@@ -1,10 +1,15 @@
 from fastapi import APIRouter
-
-from api.routers import employees, departments, positions
-
+from api.routers import (
+    attendance,
+    attendance_status,
+    employees,
+    departments,
+    positions,
+    leave_requests,
+    leave_requests_status,
+)
 
 api_router = APIRouter()
-
 
 api_router.include_router(
     prefix="/employees", router=employees.router, tags=["Employees"]
@@ -14,4 +19,22 @@ api_router.include_router(
 )
 api_router.include_router(
     prefix="/positions", router=positions.router, tags=["Positions"]
+)
+api_router.include_router(
+    prefix="/leave-requests", router=leave_requests.router, tags=["Leave Requests"]
+)
+api_router.include_router(
+    prefix="/leave-requests-status",
+    router=leave_requests_status.router,
+    tags=["Leave Requests Status"],
+)
+api_router.include_router(
+    prefix="/attendances",
+    router=attendance.router,
+    tags=["Attendance"],
+)
+api_router.include_router(
+    prefix="/attendance-status",
+    router=attendance_status.router,
+    tags=["Attendance Status"],
 )
