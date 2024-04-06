@@ -2,6 +2,26 @@ from datetime import datetime, time
 from pydantic import BaseModel
 
 
+class UserRegister(BaseModel):
+    first_name: str
+    last_name: str
+    email: str
+    password: str
+
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+
+class User(BaseModel):
+    id: str
+    first_name: str
+    last_name: str
+    email: str
+    password: str
+
+
 class Employees(BaseModel):
     id: int
     first_name: str

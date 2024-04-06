@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from api.routers import (
+    auth,
     attendance,
     attendance_status,
     employees,
@@ -10,6 +11,8 @@ from api.routers import (
 )
 
 api_router = APIRouter()
+
+api_router.include_router(prefix="/auth", router=auth.router, tags=["Login / Register"])
 
 api_router.include_router(
     prefix="/employees", router=employees.router, tags=["Employees"]

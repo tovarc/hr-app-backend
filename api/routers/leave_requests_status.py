@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session
 from api.database import database
 from api.models import models
 from api.schemas import schemas
+from api.utils.auth import get_current_user
 
-
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 get_db = database.get_db
 

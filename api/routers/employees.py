@@ -1,13 +1,14 @@
-from typing import List
+from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload, relationship
 
 from api.database import database
 from api.models import models
 from api.schemas import schemas
+from api.utils.auth import get_current_user
 
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 get_db = database.get_db
 
@@ -22,7 +23,9 @@ def get_employee(id: int, db: Session):
     status_code=status.HTTP_200_OK,
     response_model=List[schemas.EmployeesResponse],
 )
-async def get_all_employees(db: Session = Depends(get_db)):
+async def get_all_employees(
+    db: Session = Depends(get_db),
+):
     employees = (
         db.query(models.Employees).options(joinedload(models.Employees.position)).all()
     )

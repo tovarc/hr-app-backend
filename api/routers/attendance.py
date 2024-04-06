@@ -6,7 +6,9 @@ from api.models import models
 from api.schemas import schemas
 
 
-router = APIRouter()
+from api.utils.auth import get_current_user
+
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 get_db = database.get_db
 

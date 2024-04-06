@@ -22,8 +22,3 @@ app.add_middleware(
 
 
 app.include_router(prefix="/api/v1", router=api_router)
-
-
-@app.get("/")
-def root():
-    return {"Root": "API HR to data handling."}
