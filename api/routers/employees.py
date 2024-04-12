@@ -1,14 +1,13 @@
-from typing import Annotated, List
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session, joinedload, relationship
-
+from sqlalchemy.orm import Session, joinedload
 from api.database import database
 from api.models import models
 from api.schemas import schemas
-from api.utils.auth import get_current_user
+from api.utils.auth import get_user_roles
+from functools import partial
 
-
-router = APIRouter(dependencies=[Depends(get_current_user)])
+router = APIRouter()
 
 get_db = database.get_db
 
@@ -20,8 +19,9 @@ def get_employee(id: int, db: Session):
 
 @router.get(
     "",
-    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(partial(get_user_roles, ["admin"]))],
     response_model=List[schemas.EmployeesResponse],
+    status_code=status.HTTP_200_OK,
 )
 async def get_all_employees(
     db: Session = Depends(get_db),
@@ -35,8 +35,9 @@ async def get_all_employees(
 
 @router.post(
     "",
-    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(partial(get_user_roles, ["admin"]))],
     response_model=schemas.Employees,
+    status_code=status.HTTP_201_CREATED,
 )
 async def create_employee(
     employee: schemas.CreateEmployee, db: Session = Depends(get_db)
@@ -48,7 +49,12 @@ async def create_employee(
     return new_employee
 
 
-@router.patch("", status_code=status.HTTP_200_OK, response_model=schemas.Employees)
+@router.patch(
+    "",
+    dependencies=[Depends(partial(get_user_roles, ["admin"]))],
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.Employees,
+)
 async def update_employee(employee: schemas.Employees, db: Session = Depends(get_db)):
     db_employee = get_employee(employee.id, db)
 
@@ -66,7 +72,11 @@ async def update_employee(employee: schemas.Employees, db: Session = Depends(get
         )
 
 
-@router.delete("/{employee_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{employee_id}",
+    dependencies=[Depends(partial(get_user_roles, ["admin"]))],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 async def delete_employee(employee_id: int, db: Session = Depends(get_db)):
     db_employee = get_employee(employee_id, db)
 

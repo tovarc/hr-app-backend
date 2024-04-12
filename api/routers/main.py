@@ -8,11 +8,20 @@ from api.routers import (
     positions,
     leave_requests,
     leave_requests_status,
+    roles,
+    users,
 )
 
 api_router = APIRouter()
 
+
 api_router.include_router(prefix="/auth", router=auth.router, tags=["Login / Register"])
+
+
+api_router.include_router(prefix="/roles", router=roles.router, tags=["Roles"])
+
+
+api_router.include_router(prefix="/users", router=users.router, tags=["Users"])
 
 api_router.include_router(
     prefix="/employees", router=employees.router, tags=["Employees"]

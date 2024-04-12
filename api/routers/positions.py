@@ -1,3 +1,4 @@
+from functools import partial
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -5,16 +6,17 @@ from sqlalchemy.orm import Session
 from api.database import database
 from api.models import models
 from api.schemas import schemas
+from api.utils.auth import get_user_roles
 
-from api.utils.auth import get_current_user
 
-router = APIRouter(dependencies=[Depends(get_current_user)])
+router = APIRouter()
 
 get_db = database.get_db
 
 
 @router.get(
     "",
+    dependencies=[Depends(partial(get_user_roles, ["admin"]))],
     status_code=status.HTTP_200_OK,
     response_model=List[schemas.Positions],
 )
@@ -25,6 +27,7 @@ async def get_all_positions(db: Session = Depends(get_db)):
 
 @router.post(
     "",
+    dependencies=[Depends(partial(get_user_roles, ["admin"]))],
     status_code=status.HTTP_201_CREATED,
     response_model=schemas.Positions,
 )
@@ -43,7 +46,12 @@ async def create_position(
     return new_position
 
 
-@router.patch("", status_code=status.HTTP_200_OK, response_model=schemas.Positions)
+@router.patch(
+    "",
+    dependencies=[Depends(partial(get_user_roles, ["admin"]))],
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.Positions,
+)
 async def update_positon(positionn: schemas.Positions, db: Session = Depends(get_db)):
     db_position = (
         db.query(models.Positions).filter(models.Positions.id == positionn.id).first()
@@ -63,7 +71,11 @@ async def update_positon(positionn: schemas.Positions, db: Session = Depends(get
         )
 
 
-@router.delete("/{position_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{position_id}",
+    dependencies=[Depends(partial(get_user_roles, ["admin"]))],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 async def delete_position(position_id: int, db: Session = Depends(get_db)):
     db_position = (
         db.query(models.Positions).filter(models.Positions.id == position_id).first()

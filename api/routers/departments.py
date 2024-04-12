@@ -1,3 +1,4 @@
+from functools import partial
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -6,16 +7,17 @@ from api.database import database
 from api.models import models
 from api.schemas import schemas
 
-from api.utils.auth import get_current_user
+from api.utils.auth import get_user_roles
 
 
-router = APIRouter(dependencies=[Depends(get_current_user)])
+router = APIRouter()
 
 get_db = database.get_db
 
 
 @router.get(
     "",
+    dependencies=[Depends(partial(get_user_roles, ["admin"]))],
     status_code=status.HTTP_200_OK,
     response_model=List[schemas.Departments],
 )
@@ -26,6 +28,7 @@ async def get_all_departments(db: Session = Depends(get_db)):
 
 @router.post(
     "",
+    dependencies=[Depends(partial(get_user_roles, ["admin"]))],
     status_code=status.HTTP_201_CREATED,
     response_model=schemas.Departments,
 )
@@ -39,7 +42,12 @@ async def create_department(
     return new_department
 
 
-@router.patch("", status_code=status.HTTP_200_OK, response_model=schemas.Departments)
+@router.patch(
+    "",
+    dependencies=[Depends(partial(get_user_roles, ["admin"]))],
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.Departments,
+)
 async def update_department(
     department: schemas.Departments, db: Session = Depends(get_db)
 ):
@@ -63,7 +71,11 @@ async def update_department(
         )
 
 
-@router.delete("/{department_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{department_id}",
+    dependencies=[Depends(partial(get_user_roles, ["admin"]))],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 async def delete_department(department_id: int, db: Session = Depends(get_db)):
     db_department = (
         db.query(models.Departments)

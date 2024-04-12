@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
-from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from passlib.context import CryptContext
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from api.core.settings import settings
 from api.schemas import schemas
 from api.database import database
@@ -29,12 +29,18 @@ def verify_password(plain_password, hashed_password):
 
 
 def create_access_token(user: schemas.User, expires_delta: timedelta | None = None):
+    print(user.role.name)
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=30)
 
-    to_encode = {"id": user.id, "email": user.email, "exp": expire}
+    to_encode = {
+        "id": user.id,
+        "email": user.email,
+        "role": {"id": user.role.id, "name": user.role.name},
+        "exp": expire,
+    }
 
     encoded_jwt = jwt.encode(
         to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
@@ -66,7 +72,12 @@ def register(user: schemas.UserRegister, db: Session = Depends(get_db)):
 
 @router.post("/login", status_code=status.HTTP_200_OK)
 def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
-    db_user = db.query(models.User).filter(models.User.email == user.email).first()
+    db_user = (
+        db.query(models.User)
+        .options(joinedload(models.User.role), joinedload(models.User.employee))
+        .filter(models.User.email == user.email)
+        .first()
+    )
     if not db_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -79,9 +90,15 @@ def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
         )
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(db_user, access_token_expires)
-    return access_token
+    return {"token": access_token, "role": db_user.role.name}
 
 
 @router.get("/verify")
 def verify(user: Annotated[models.User, Depends(get_current_user)]):
-    return True if user else False
+    if user:
+        return user
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User does not exist",
+        )

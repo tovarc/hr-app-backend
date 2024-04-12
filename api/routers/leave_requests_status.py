@@ -1,12 +1,13 @@
+from functools import partial
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from api.database import database
 from api.models import models
 from api.schemas import schemas
-from api.utils.auth import get_current_user
+from api.utils.auth import get_user_roles
 
-router = APIRouter(dependencies=[Depends(get_current_user)])
+router = APIRouter()
 
 get_db = database.get_db
 
@@ -23,7 +24,11 @@ async def get_all_leave_requests_status(db: Session = Depends(get_db)):
     return leave_requests_status
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    dependencies=[Depends(partial(get_user_roles, ["admin"]))],
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_leave_request_status(
     leave_request_status: schemas.CreateLeaveRequestStatus,
     db: Session = Depends(get_db),
@@ -35,7 +40,11 @@ async def create_leave_request_status(
     return new_leave_request
 
 
-@router.patch("", status_code=status.HTTP_200_OK)
+@router.patch(
+    "",
+    dependencies=[Depends(partial(get_user_roles, ["admin"]))],
+    status_code=status.HTTP_200_OK,
+)
 async def update_leave_request_status(
     leave_request_status: schemas.UpdateLeaveRequestStatus,
     db: Session = Depends(get_db),

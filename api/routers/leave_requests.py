@@ -1,3 +1,4 @@
+from functools import partial
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
@@ -6,9 +7,9 @@ from api.database import database
 from api.models import models
 from api.schemas import schemas
 
-from api.utils.auth import get_current_user
+from api.utils.auth import get_user_roles
 
-router = APIRouter(dependencies=[Depends(get_current_user)])
+router = APIRouter()
 get_db = database.get_db
 
 
@@ -19,6 +20,7 @@ def get_leave_request(id: int, db: Session):
 
 @router.get(
     "",
+    dependencies=[Depends(partial(get_user_roles, ["admin", "employee"]))],
     status_code=status.HTTP_200_OK,
     response_model=List[schemas.LeaveRequestsResponse],
 )
@@ -32,7 +34,33 @@ async def get_all_leave_requests(db: Session = Depends(get_db)):
     return leave_requests
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.get(
+    "/current-employee",
+    dependencies=[Depends(partial(get_user_roles, ["employee"]))],
+    status_code=status.HTTP_200_OK,
+)
+async def get_all_current_employee_leave_requests(
+    user: schemas.User = Depends(partial(get_user_roles, ["employee"])),
+    db: Session = Depends(get_db),
+):
+    leave_requests = (
+        db.query(models.LeaveRequests)
+        .where(models.LeaveRequests.employee_id == user.employee.id)
+        .options(
+            joinedload(models.LeaveRequests.status),
+            joinedload(models.LeaveRequests.employee),
+        )
+        .all()
+    )
+
+    return leave_requests
+
+
+@router.post(
+    "",
+    dependencies=[Depends(partial(get_user_roles, ["admin"]))],
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_leave_request(
     leave_request: schemas.CreateLeaveRequest, db: Session = Depends(get_db)
 ):
@@ -43,7 +71,37 @@ async def create_leave_request(
     return new_leave_request
 
 
-@router.patch("", status_code=status.HTTP_200_OK)
+@router.post(
+    "/employee",
+    dependencies=[Depends(partial(get_user_roles, ["employee"]))],
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_leave_request_by_employee(
+    leave_request: schemas.CreateLeaveRequestByEmployee,
+    user: schemas.User = Depends(partial(get_user_roles, ["employee"])),
+    db: Session = Depends(get_db),
+):
+    pending_status = (
+        db.query(models.LeaveRequestsStatus)
+        .filter(models.LeaveRequestsStatus.name == "Pending")
+        .first()
+    )
+
+    if pending_status:
+        new_leave_request = models.LeaveRequests(**leave_request.model_dump())
+        setattr(new_leave_request, "employee_id", user.employee.id)
+        setattr(new_leave_request, "status_id", pending_status.id)
+        db.add(new_leave_request)
+        db.commit()
+        db.refresh(new_leave_request)
+        return new_leave_request
+
+
+@router.patch(
+    "",
+    dependencies=[Depends(partial(get_user_roles, ["admin"]))],
+    status_code=status.HTTP_200_OK,
+)
 async def update_leave_request(
     leave_request: schemas.UpdateLeaveRequest, db: Session = Depends(get_db)
 ):

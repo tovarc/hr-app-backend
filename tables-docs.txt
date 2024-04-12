@@ -26,6 +26,7 @@ DONE
    - `MinSalary`
    - `MaxSalary`
 
+DONE
 4. Attendance
    - `AttendanceID`: Primary Key
    - `EmployeeID`: Foreign Key (Employees Table)

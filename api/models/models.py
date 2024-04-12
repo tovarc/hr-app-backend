@@ -13,6 +13,19 @@ class User(Base):
     email = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
 
+    role_id = Column(Integer, ForeignKey("roles.id"))
+    role = relationship("Role", back_populates="user")
+
+    employee_id = Column(Integer, ForeignKey("employees.id"), nullable=True)
+    employee = relationship("Employees", back_populates="user")
+
+
+class Role(Base):
+    __tablename__ = "roles"
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True, nullable=False)
+    user = relationship("User", back_populates="role")
+
 
 class Employees(Base):
     __tablename__ = "employees"
@@ -25,6 +38,7 @@ class Employees(Base):
     department_id = Column(Integer, ForeignKey("departments.id"))
     hire_date = Column(DateTime, nullable=False)
 
+    user = relationship("User", back_populates="employee")
     position = relationship("Positions", back_populates="employees")
     department = relationship("Departments", back_populates="employees")
     attendance = relationship("Attendance", back_populates="employee")
@@ -35,7 +49,7 @@ class Departments(Base):
     __tablename__ = "departments"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, unique=True)
 
     employees = relationship("Employees", back_populates="department")
 
@@ -44,7 +58,7 @@ class Positions(Base):
     __tablename__ = "positions"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, unique=True)
     responsibilities = Column(String, nullable=False)
     min_salary = Column(Float, nullable=False)
     max_salary = Column(Float, nullable=False)

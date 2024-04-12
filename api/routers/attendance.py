@@ -1,3 +1,4 @@
+from functools import partial
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 
@@ -6,9 +7,9 @@ from api.models import models
 from api.schemas import schemas
 
 
-from api.utils.auth import get_current_user
+from api.utils.auth import get_current_user, get_user_roles
 
-router = APIRouter(dependencies=[Depends(get_current_user)])
+router = APIRouter()
 
 get_db = database.get_db
 
@@ -30,6 +31,46 @@ async def get_all_attendances(db: Session = Depends(get_db)):
     )
 
     return attendances
+
+
+@router.get(
+    "/current-employee",
+    dependencies=[Depends(partial(get_user_roles, ["employee"]))],
+    status_code=status.HTTP_200_OK,
+)
+async def get_all_current_employee_attendances(
+    user: schemas.User = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    attendances = (
+        db.query(models.Attendance)
+        .where(models.Attendance.employee_id == user.employee.id)
+        .options(
+            joinedload(models.Attendance.status),
+            joinedload(models.Attendance.employee),
+        )
+        .all()
+    )
+
+    return attendances
+
+
+@router.post(
+    "/employee",
+    dependencies=[Depends(partial(get_user_roles, ["employee"]))],
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_attendance_by_employee(
+    attendance: schemas.CreateAttendanceByEmployee,
+    user: schemas.User = Depends(partial(get_user_roles, ["employee"])),
+    db: Session = Depends(get_db),
+):
+    new_attendance = models.Attendance(**attendance.model_dump())
+    setattr(new_attendance, "employee_id", user.employee.id)
+
+    db.add(new_attendance)
+    db.commit()
+    db.refresh(new_attendance)
+    return new_attendance
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)

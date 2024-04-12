@@ -7,6 +7,8 @@ class UserRegister(BaseModel):
     last_name: str
     email: str
     password: str
+    role_id: int
+    employee_id: int
 
 
 class UserLogin(BaseModel):
@@ -14,12 +16,18 @@ class UserLogin(BaseModel):
     password: str
 
 
-class User(BaseModel):
-    id: str
+class Role(BaseModel):
+    id: int
+    name: str
+
+
+class UpdateUser(BaseModel):
+    id: int
     first_name: str
     last_name: str
     email: str
-    password: str
+    role_id: int
+    employee_id: int
 
 
 class Employees(BaseModel):
@@ -30,6 +38,21 @@ class Employees(BaseModel):
     position_id: int
     department_id: int
     hire_date: datetime
+
+
+class User(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    email: str
+    password: str
+    role: Role
+    employee: Employees
+
+
+class AssignEmployee(BaseModel):
+    user_id: int
+    employee_id: int
 
 
 class CreateEmployee(BaseModel):
@@ -83,6 +106,12 @@ class CreateLeaveRequest(BaseModel):
     status_id: int
 
 
+class CreateLeaveRequestByEmployee(BaseModel):
+    start_date: datetime
+    end_date: datetime
+    reason: str
+
+
 class UpdateLeaveRequest(BaseModel):
     id: int
     start_date: datetime
@@ -127,6 +156,13 @@ class CreateAttendanceStatus(BaseModel):
 
 class CreateAttendance(BaseModel):
     employee_id: int
+    date: datetime
+    time_in: time
+    time_out: time
+    status_id: int
+
+
+class CreateAttendanceByEmployee(BaseModel):
     date: datetime
     time_in: time
     time_out: time
