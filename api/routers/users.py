@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
+from passlib.context import CryptContext
 from sqlalchemy.orm import Session, joinedload
 from api.database import database
 from api.models import models
@@ -20,6 +21,13 @@ def get_employee(id: int, db: Session):
 def get_user(id: int, db: Session):
     user = db.get(models.User, id)
     return user
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
 
 
 @router.get(
@@ -65,6 +73,9 @@ async def get_all_users(
 )
 async def update_user(user: schemas.UpdateUser, db: Session = Depends(get_db)):
     db_user = get_user(user.id, db)
+
+    if user.password:
+        user.password = get_password_hash(user.password)
 
     if db_user:
         for key, value in user:

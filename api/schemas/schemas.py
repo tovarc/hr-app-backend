@@ -26,6 +26,7 @@ class UpdateUser(BaseModel):
     first_name: str
     last_name: str
     email: str
+    password: str
     role_id: int
     employee_id: int
 
